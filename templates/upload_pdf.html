@@ -1,0 +1,231 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload PDF</title>
+    <!-- <link rel="stylesheet" href="static/styles/styles.css"> -->
+    <!-- <script src="static/scripts/login.js" defer></script>
+    <script src="static/scripts/server.js"></script> -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: rgb(244, 246, 247);
+            /* background-image: url(/static/images/bgimage1.jpeg); */
+            background-size: cover; /* Adjust as needed */
+            background-repeat: no-repeat; /* Adjust as needed */
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+        display: flex;
+        flex-direction: column; /* Change to column layout */
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        width: 100%;
+        }
+        .text-container {
+            width: 80%;
+           /*   background-color: rgba(106, 163, 225, 0.7);Adding opacity */
+            color: #fff;
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
+            margin-bottom: 20px; /* Add margin to separate from buttons */
+        }
+        /* #downloadCSV {
+        position: relative;
+        background-color:  #007bff;
+        } */
+        button {
+        margin-bottom: 10px; /* Adjust the margin-bottom as needed */
+        }
+        button[type="submit"]:hover {
+        background-color: #0056b3;
+        }
+        .processing-message {
+        background-color: #ffffcc; /* Background color */
+        color: #333; /* Text color */
+        padding: 10px; /* Padding around the message */
+        margin-bottom: 10px; /* Spacing between messages */
+        border: 1px solid #ccc; /* Border */
+        border-radius: 5px; /* Rounded corners */
+        }
+
+        .sign-out-button {
+           background-color: red;
+           color: white;
+           font-size: 16px;
+           padding: 12px 20px;
+           border: none;
+           border-radius: 30px;
+           cursor: pointer;
+           width: 90px; 
+           height: 45px; 
+           position: fixed;
+           top: 20px; 
+           right: 20px;
+        }
+
+        .submit {
+           background-color: #9B59B6;
+           color: white;
+           font-size: 16px;
+           padding: 12px 20px;
+           border: none;
+           border-radius: 30px;
+           cursor: pointer;
+           width: 90px; 
+           height: 45px; 
+           position: fixed;
+           bottom: 160px;
+           
+        }
+
+        .text-field-wrapper {
+            position: relative;
+            display: inline-block;
+            
+        }
+
+        .text-field-wrapper input[type="text"] {
+            padding-right: 20px; 
+            
+        }
+
+        .delete-icon {
+            position: absolute;
+            top: 50%;
+            right: 5px;
+            transform: translateY(-50%);
+            cursor: pointer;
+            background-color: red;
+            color: white;
+            width: 20px;
+            height: 20px;
+            
+            line-height: 20px;
+            text-align: center;
+            border-radius: 50%;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .upload-button {
+           background-color: skyblue;
+           color: green;
+           font-size: 20px; /* Increase the font size as desired */
+           padding: 10px 20px; /* Adjust the padding to increase the button size */
+           border: none;
+           border-radius: 30px;
+           cursor: pointer;
+           bottom: auto;
+        }
+
+        
+
+
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="text-container">
+        <div>
+        <h1 style="color: #081c52;">Welcome to Our OCR Text Extraction Service</h1>
+        <p>   </p>
+        <h3 style="color: #700d12d5;">Empower your workflow with our advanced OCR text extraction service. </h3>
+        <h3 style="color: #700d12d5;">Seamlessly convert images, PDFs, scanned documents into structured data for enhanced productivity and insights.</h3>
+    </div>
+    </div>
+    <div class="main-content">
+        <!-- <h3>Upload PDF</h3> -->
+        <!-- Instruction text for uploading PDF -->
+        <h3 class="instruction-text" style="color: #081c52;">Select a PDF file to upload</h3>
+        <form id="uploadForm">
+            <input type="file" id="pdfFile" accept=".pdf" required><br><br>
+            <button type="submit" class="upload-button">Upload</button>
+        </form>
+        <div class="message-container">
+            <!-- Messages will be dynamically added here -->
+        </div>
+        <!-- <div id="uploadStatus"></div> -->
+
+        <button id="downloadCSV" type="submit">Download CSV</button>
+    </div>
+    <div class="header">
+        <!-- Add a sign-out button -->
+        <form id="signOutForm" action="/login" method="GET">
+            <button type="submit" class="sign-out-button">Sign Out</button>
+        </form>
+    </div>
+
+    <h1>Dynamic Text Fields</h1>
+    
+    <form id="dynamicForm">
+        <div id="textFieldsContainer">
+            <!-- Text fields will be dynamically added here -->
+        </div>
+                                   
+    </form>
+    <button type="button" onclick="addTextField()" class="upload-button">Add Text Field</button>
+    <button type="button" onclick="submitForm()" class="submit">Submit</button>
+
+    <script>
+        function addTextField() {
+          const container = document.getElementById('textFieldsContainer');
+        
+          const wrapper = document.createElement('div');
+          wrapper.classList.add('text-field-wrapper');
+        
+          const textField = document.createElement('input');
+          textField.type = 'text';
+          textField.name = 'dynamicText[]'; // Set name as an array to collect all dynamic text field values
+        
+          const deleteIcon = document.createElement('span');
+          deleteIcon.classList.add('delete-icon');
+          deleteIcon.innerHTML = '&times;'; // You can use any icon or text here
+          deleteIcon.addEventListener('click', () => {
+            wrapper.remove();
+          });
+        
+          wrapper.appendChild(textField);
+          wrapper.appendChild(deleteIcon);
+          container.appendChild(wrapper);
+        }
+        
+        function submitForm() {
+          const form = document.getElementById('dynamicForm');
+          const formData = new FormData(form);
+        
+          fetch('/process_text', {
+            method: 'POST',
+            body: formData
+          })
+          .then(response => {
+            if (response.ok) {
+              return response.blob();
+            } else {
+              throw new Error('Network response was not ok.');
+            }
+          })
+          .then(blob => {
+            // Create a temporary anchor element to trigger the download
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'result_field.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+          })
+          .catch(error => console.error('Error:', error));
+        }
+        </script>
+    
+    <script src="static/scripts/upload.js"></script>
+</body>
+</html>

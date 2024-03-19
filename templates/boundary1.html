@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Invoice OCR</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Invoice OCR</h1>
+
+    <form id="uploadForm" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" required>
+        <input type="submit" value="Upload">
+    </form>
+
+    {% if pdf_text %}
+    <h2>OCR Text</h2>
+    <pre>{{ pdf_text }}</pre>
+
+    <h2>Draw Boundary Boxes</h2>
+    <canvas id="pdfCanvas" width="800" height="600"></canvas>
+
+    <h2>Column Names</h2>
+    <ul id="columnList"></ul>
+    <input type="text" id="columnInput" placeholder="Enter column name">
+    <button id="addColumn">Add Column</button>
+
+    <button id="saveCoordinates">Save Coordinates</button>
+    {% endif %}
+
+    <script>
+        $(document).ready(function() {
+            var pdf_image; // Define pdf_image variable outside the function scope
+
+            // Handle file upload
+            $('#uploadForm').submit(function(event) {
+                event.preventDefault();
+                var formData = new FormData(this);
+                $.ajax({
+                    url: '/',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        $('#pdfCanvas').show();
+                        // Render the PDF on the canvas
+                        pdf_image = new Image();
+                        pdf_image.src = '{{ pdf_base64 }}';
+                        pdf_image.onload = function() {
+                            var canvas = document.getElementById('pdfCanvas');
+                            var ctx = canvas.getContext('2d');
+                            ctx.drawImage(pdf_image, 0, 0, canvas.width, canvas.height);
+
+                            // Handle boundary box drawing
+                            var isDrawing = false;
+                            var startX, startY;
+
+                            canvas.addEventListener('mousedown', function(event) {
+                                isDrawing = true;
+                                startX = event.clientX - canvas.offsetLeft;
+                                startY = event.clientY - canvas.offsetTop;
+                            });
+
+                            canvas.addEventListener('mousemove', function(event) {
+                                if (isDrawing) {
+                                    var x = event.clientX - canvas.offsetLeft;
+                                    var y = event.clientY - canvas.offsetTop;
+                                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                                    ctx.drawImage(pdf_image, 0, 0, canvas.width, canvas.height);
+                                    ctx.beginPath();
+                                    ctx.rect(startX, startY, x - startX, y - startY);
+                                    ctx.stroke();
+                                }
+                            });
+
+                            canvas.addEventListener('mouseup', function(event) {
+                                isDrawing = false;
+                                var x = event.clientX - canvas.offsetLeft;
+                                var y = event.clientY - canvas.offsetTop;
+                                var coordinates = startX + ',' + startY + ',' + (x - startX) + ',' + (y - startY);
+                                // Prompt the user for the column name
+                                var columnName = prompt('Enter column name');
+                                if (columnName) {
+                                    $('#columnList').append('<li>' + columnName + ': ' + coordinates + '</li>');
+                                }
+                            });
+                        }
+                    }
+                });
+            });
+
+            // Add column name
+            $('#addColumn').click(function() {
+                var columnName = $('#columnInput').val();
+                if (columnName) {
+                    $('#columnList').append('<li>' + columnName + '</li>');
+                    $('#columnInput').val('');
+                }
+            });
+
+            // Save coordinates
+            $('#saveCoordinates').click(function() {
+                var columnNames = [];
+                var coordinates = [];
+                $('#columnList li').each(function() {
+                    var columnInfo = $(this).text().split(': ');
+                    columnNames.push(columnInfo[0]);
+                    if (columnInfo.length > 1) {
+                        coordinates.push(columnInfo[1]);
+                    }
+                });
+
+                $.ajax({
+                    url: '/save_coordinates',
+                    type: 'POST',
+                    data: {
+                        'columnName[]': columnNames,
+                        'coordinates[]': coordinates
+                    },
+                    success: function(response) {
+                        alert(response);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
