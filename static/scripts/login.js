@@ -153,31 +153,7 @@ uploadForm.addEventListener('submit', function(event) {
 });
 
 
-// downloadButton.addEventListener('click', function() {
-//     // Generate and download the CSV file
-//     // Replace this with your CSV generation logic
-//     const csvData = 'Your CSV Data Here';
-//     const blob = new Blob([csvData], { type: 'text/csv' });
-//     const url = window.URL.createObjectURL(blob);
-//     const a = document.createElement('a');
-//     a.href = url;
-//     a.download = uploadedFileName.replace('.pdf', '.csv');
-//     a.download = 'data.csv';
-//     document.body.appendChild(a);
-//     a.click();
-//     document.body.removeChild(a);
-//     window.URL.revokeObjectURL(url);
-//      // Remove the downloading icon after download is complete
-//      downloadButton.classList.remove('downloading');
-// });
 
-// function isValidCredentials(username, password) {
-//     // Perform validation here
-//     // Username must contain only alphabets
-//     const usernamePattern = /^[A-Za-z]+$/;
-//     // For simplicity, let's assume any non-empty username and password is valid
-//     return usernamePattern.test(username) && username !== '' && password !== '';
-// }
 
 document.addEventListener('DOMContentLoaded', function() {
     const loginForm = document.getElementById('loginForm');
